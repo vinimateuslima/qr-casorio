@@ -26,7 +26,6 @@ const opcoesParentesco = [
 const FORM_INICIAL = {
   nome: '',
   parentesco: '',
-  status: false,
   senha: ''
 };
 
@@ -41,7 +40,6 @@ export function FormularioConvidado({ onConvidadoSalvo, convidadoSelecionado }: 
       setFormData({
         nome: convidadoSelecionado.nome,
         parentesco: convidadoSelecionado.parentesco,
-        status: convidadoSelecionado.status,
         senha: convidadoSelecionado.senha
       });
       setModoEdicao(true);
@@ -78,8 +76,7 @@ export function FormularioConvidado({ onConvidadoSalvo, convidadoSelecionado }: 
 
     const dados: NovoConvidado = {
       nome: formData.nome.trim(),
-      parentesco: formData.parentesco === 'Outro' ? 'amigo' : formData.parentesco,
-      status: formData.status
+      parentesco: formData.parentesco === 'Outro' ? 'amigo' : formData.parentesco
     };
 
     try {
@@ -138,16 +135,6 @@ export function FormularioConvidado({ onConvidadoSalvo, convidadoSelecionado }: 
               {opcao}
             </option>
           ))}
-        </select>
-
-        <select
-          value={String(formData.status)}
-          onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value === 'true' }))}
-          className={styles.select}
-          disabled={enviando}
-        >
-          <option value="false">Aguardando</option>
-          <option value="true">Presente</option>
         </select>
 
         <input

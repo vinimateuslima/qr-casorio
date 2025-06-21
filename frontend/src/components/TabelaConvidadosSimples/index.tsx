@@ -1,17 +1,11 @@
-'use client';
-
 import { useState } from 'react';
-import { api, Convidado } from '@/services/api';
-import { FaTrash, FaQrcode } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { Convidado } from '@/services/api';
+import { FaCheck } from 'react-icons/fa';
 import styles from './styles.module.css';
-import { gerarConvite, downloadConvite } from '@/utils/convite';
 
 interface Props {
   convidados: Convidado[];
   itensPorPagina?: number;
-  onSelecionarConvidado: (convidado: Convidado) => void;
-  onConvidadoDeletado: () => void;
 }
 
 type OrdenacaoTipo = 'asc' | 'desc';
@@ -25,16 +19,10 @@ const opcoesQuantidade = [
   { valor: -1, label: 'Todas' }
 ];
 
-export function TabelaConvidados({ 
-  convidados, 
-  itensPorPagina = 10, 
-  onSelecionarConvidado,
-  onConvidadoDeletado 
-}: Props) {
+export function TabelaConvidadosSimples({ convidados, itensPorPagina = 10 }: Props) {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [ordenacao, setOrdenacao] = useState<CampoOrdenacao>('nome');
   const [tipoOrdenacao, setTipoOrdenacao] = useState<OrdenacaoTipo>('asc');
-  const [convidadoSelecionado, setConvidadoSelecionado] = useState<string | null>(null);
   const [quantidadePorPagina, setQuantidadePorPagina] = useState(itensPorPagina);
 
   const ordenarConvidados = (lista: Convidado[]): Convidado[] => {
@@ -71,80 +59,15 @@ export function TabelaConvidados({
     }
   };
 
-  const handleSelecionarConvidado = (convidado: Convidado) => {
-    setConvidadoSelecionado(convidado._id);
-    onSelecionarConvidado(convidado);
-    const inputNome = document.querySelector('input[placeholder="Nome do convidado"]');
-    if (inputNome) {
-      inputNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
-  const handleDeletarConvidado = async (convidado: Convidado, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    const result = await Swal.fire({
-      title: 'Confirmar exclusão',
-      text: `Deseja realmente excluir o convidado "${convidado.nome}"?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sim, excluir',
-      cancelButtonText: 'Não'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await api.deletarConvidado(convidado._id);
-        Swal.fire({
-          title: 'Excluído!',
-          text: 'Convidado excluído com sucesso.',
-          icon: 'success'
-        });
-        onConvidadoDeletado();
-      } catch (error) {
-        console.error(error);
-        Swal.fire({
-          title: 'Erro',
-          text: 'Erro ao excluir convidado.',
-          icon: 'error'
-        });
-      }
-    }
-  };
-
-  const handleGerarConvite = async (convidado: Convidado, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    try {
-      const conviteDataUrl = await gerarConvite(convidado.nome, convidado.senha);
-      downloadConvite(conviteDataUrl, convidado.nome);
-    } catch (error) {
-      console.error('Erro ao gerar convite:', error);
-      Swal.fire({
-        title: 'Erro',
-        text: 'Erro ao gerar o convite. Por favor, tente novamente.',
-        icon: 'error'
-      });
-    }
-  };
-
   const handleQuantidadeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const novaQuantidade = Number(e.target.value);
     setQuantidadePorPagina(novaQuantidade);
-    setPaginaAtual(1); // Volta para a primeira página ao mudar a quantidade
+    setPaginaAtual(1);
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.tabelaHeader}>
-        <div className={styles.infoContainer}>
-          <div className={styles.info}>
-            <span>Total de convidados: {convidados.length}</span>
-            <span>Convidados presentes: {convidados.filter(c => c.status).length}</span>
-          </div>
-        </div>
         <div className={styles.selectContainer}>
           <span>Mostrar</span>
           <select
@@ -202,12 +125,7 @@ export function TabelaConvidados({
           </thead>
           <tbody>
             {convidadosPaginados.map((convidado) => (
-              <tr 
-                key={convidado._id}
-                onClick={() => handleSelecionarConvidado(convidado)}
-                className={convidadoSelecionado === convidado._id ? styles.linhaSelecionada : ''}
-                style={{ cursor: 'pointer' }}
-              >
+              <tr key={convidado._id}>
                 <td>
                   <div className="d-flex flex-column">
                     <span>{convidado.nome}</span>
@@ -228,20 +146,15 @@ export function TabelaConvidados({
                 </td>
                 <td className={styles.colunaAcoes}>
                   <div className={styles.botoesAcoes}>
-                    <button
+                    <a
+                      href={`/validar?senha=${convidado.senha}`}
                       className={styles.botaoAcao}
-                      onClick={(e) => handleGerarConvite(convidado, e)}
-                      title="Gerar convite"
+                      title="Check-in"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <FaQrcode />
-                    </button>
-                    <button
-                      className={styles.botaoAcao}
-                      onClick={(e) => handleDeletarConvidado(convidado, e)}
-                      title="Deletar convidado"
-                    >
-                      <FaTrash />
-                    </button>
+                      <FaCheck />
+                    </a>
                   </div>
                 </td>
               </tr>

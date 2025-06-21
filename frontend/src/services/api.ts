@@ -11,14 +11,14 @@ export interface Convidado {
 export interface NovoConvidado {
   nome: string;
   parentesco: string;
-  status: boolean;
+  status?: boolean;
 }
 
 export interface ValidarSenha {
   senha: string;
 }
 
-const API_URL = 'http://localhost:3000'; // Ajuste conforme necessário
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const api = {
   async listarConvidados(): Promise<Convidado[]> {
