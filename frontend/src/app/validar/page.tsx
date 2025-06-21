@@ -11,6 +11,10 @@ interface ValidacaoStatus {
   mensagem: string;
 }
 
+interface ApiError {
+  message: string;
+}
+
 export default function ValidarPage() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<ValidacaoStatus | null>(null);
@@ -35,10 +39,11 @@ export default function ValidarPage() {
           sucesso: resposta.mensagem.includes('sucesso'),
           mensagem: resposta.mensagem
         });
-      } catch (error: any) {
+      } catch (error) {
+        const apiError = error as ApiError;
         setStatus({
           sucesso: false,
-          mensagem: error.message
+          mensagem: apiError.message || 'Erro ao validar senha'
         });
       } finally {
         setCarregando(false);
