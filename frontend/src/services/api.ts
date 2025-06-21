@@ -20,57 +20,36 @@ export interface ValidarSenha {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true
+});
+
 export const api = {
   async listarConvidados(): Promise<Convidado[]> {
-    const response = await fetch(`${API_URL}/convidados`);
-    if (!response.ok) {
-      throw new Error('Erro ao buscar convidados');
-    }
-    return response.json();
+    const response = await axiosInstance.get('/convidados');
+    return response.data;
   },
 
   async cadastrarConvidado(dados: NovoConvidado): Promise<Convidado> {
-    const response = await fetch(`${API_URL}/convidados`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dados),
-    });
-    if (!response.ok) {
-      throw new Error('Erro ao cadastrar convidado');
-    }
-    return response.json();
+    const response = await axiosInstance.post('/convidados', dados);
+    return response.data;
   },
 
   async atualizarConvidado(id: string, dados: NovoConvidado): Promise<Convidado> {
-    const response = await fetch(`${API_URL}/convidados/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dados),
-    });
-    if (!response.ok) {
-      throw new Error('Erro ao atualizar convidado');
-    }
-    return response.json();
+    const response = await axiosInstance.put(`/convidados/${id}`, dados);
+    return response.data;
   },
 
   async deletarConvidado(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/convidados/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Erro ao deletar convidado');
-    }
+    await axiosInstance.delete(`/convidados/${id}`);
   },
 
   async validarSenha({ senha }: { senha: string }) {
     try {
-      const response = await axios.post(`${API_URL}/convidados/validar`, { senha });
+      const response = await axiosInstance.post('/convidados/validar', { senha });
       return response.data;
-    } catch (error: unknown) {
+    } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         throw new Error(error.response.data.mensagem || 'Senha inválida');
       }
